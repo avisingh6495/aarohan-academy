@@ -4,11 +4,13 @@ import { MapPin, Phone, Mail, Clock, Send, MessageCircle } from 'lucide-react';
 export default function ContactSection({ contactData }) {
   const data = contactData || {
     address: "Aarohan Academy, Main Knowledge Highway, Near City Central Library, Sector 4",
-    phone: "+91 98765 43210 / +91 98765 43211",
+    phone: "+91 98765 43210",
     email: "info@aarohanacademy.edu.in",
     hours: "Mon - Sat: 3:00 PM - 8:00 PM | Sun: 9:00 AM - 1:00 PM",
     mapEmbedUrl: "https://maps.google.com/maps?q=IIT+Kanpur&t=&z=13&ie=UTF8&iwloc=&output=embed"
   };
+
+  const cleanPhone = data.phone ? data.phone.split('/')[0].replace(/[^0-9+]/g, '') : '+919876543210';
 
   return (
     <section className="section section-bg" id="contact">
@@ -21,14 +23,14 @@ export default function ContactSection({ contactData }) {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem' }}>
+        <div className="contact-grid">
           {/* Contact Details & Map */}
           <div>
             <div className="card" style={{ marginBottom: '1.5rem' }}>
               <h3 style={{ fontSize: '1.35rem', fontWeight: 700, marginBottom: '1.25rem' }}>Academy Center Details</h3>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                   <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(249,115,22,0.1)', color: '#F97316', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <MapPin size={22} />
                   </div>
@@ -38,27 +40,35 @@ export default function ContactSection({ contactData }) {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                   <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(13,148,136,0.1)', color: '#0D9488', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Phone size={22} />
                   </div>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '0.925rem' }}>Phone & WhatsApp</div>
                     <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{data.phone}</div>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                      <a href={`tel:${cleanPhone}`} className="btn btn-outline" style={{ padding: '0.25rem 0.65rem', fontSize: '0.78rem' }}>
+                        <Phone size={12} /> Call Now
+                      </a>
+                      <a href={`https://wa.me/${cleanPhone.replace('+', '')}`} target="_blank" rel="noreferrer" className="btn btn-primary" style={{ padding: '0.25rem 0.65rem', fontSize: '0.78rem', background: '#25D366', borderColor: '#25D366' }}>
+                        <MessageCircle size={12} /> WhatsApp
+                      </a>
+                    </div>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                   <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(99,102,241,0.1)', color: '#6366F1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Mail size={22} />
                   </div>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '0.925rem' }}>Email Address</div>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{data.email}</div>
+                    <a href={`mailto:${data.email}`} style={{ fontSize: '0.875rem', color: 'var(--text-muted)', textDecoration: 'underline' }}>{data.email}</a>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                   <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(15,23,42,0.1)', color: 'var(--primary-navy)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Clock size={22} />
                   </div>
@@ -98,18 +108,12 @@ export default function ContactSection({ contactData }) {
               </div>
               <div className="form-group">
                 <label className="form-label">Your Query</label>
-                <textarea rows="4" className="form-textarea" placeholder="How can we help you?" required></textarea>
+                <textarea className="form-textarea" rows="4" placeholder="How can we help you?" required></textarea>
               </div>
               <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-                <Send size={16} /> Send Quick Message
+                <Send size={16} /> Send Direct Message
               </button>
             </form>
-
-            <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
-              <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" className="btn" style={{ background: '#25D366', color: 'white', fontSize: '0.875rem' }}>
-                <MessageCircle size={18} /> Chat on WhatsApp
-              </a>
-            </div>
           </div>
         </div>
       </div>

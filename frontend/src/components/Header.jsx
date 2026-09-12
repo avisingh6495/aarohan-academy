@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, Phone, Mail, Menu, X, Shield, Sparkles } from 'lucide-react';
 
 export default function Header({ activeSection, setActiveSection, onOpenAdmin, announcements = [], contactData }) {
@@ -20,6 +20,18 @@ export default function Header({ activeSection, setActiveSection, onOpenAdmin, a
     { id: 'contact', label: 'Contact' },
   ];
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
   const handleNavClick = (id) => {
     setActiveSection(id);
     setMobileMenuOpen(false);
@@ -37,53 +49,25 @@ export default function Header({ activeSection, setActiveSection, onOpenAdmin, a
       <div className="header-top-bar">
         <div className="container header-top-content">
           {/* Left: contact info */}
-          <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem' }}>
+          <div className="header-contact-info">
+            <a href={`tel:${contact.phone.replace(/[^0-9+]/g, '')}`} className="header-top-link">
               <Phone size={13} color="#F97316" /> {contact.phone}
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem' }}>
+            </a>
+            <a href={`mailto:${contact.email}`} className="header-top-link header-email-desktop">
               <Mail size={13} color="#F97316" /> {contact.email}
-            </span>
+            </a>
           </div>
 
           {/* Right: announcement badge + admin button */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div className="header-top-actions">
             {latestNotice && (
               <button
                 onClick={() => handleNavClick('notices')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.45rem',
-                  fontSize: '0.78rem',
-                  cursor: 'pointer',
-                  padding: '0.2rem 0.6rem',
-                  borderRadius: '6px',
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  border: '1px solid rgba(255, 255, 255, 0.18)',
-                  transition: 'all 0.2s ease',
-                  color: '#F1F5F9',
-                  fontFamily: 'inherit',
-                }}
+                className="header-notice-btn"
                 title="Click to view all Notices & Announcements"
               >
-                <span style={{
-                  background: '#F97316',
-                  color: 'white',
-                  padding: '0.1rem 0.45rem',
-                  borderRadius: '4px',
-                  fontSize: '0.68rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.04em',
-                  whiteSpace: 'nowrap',
-                }}>NEW</span>
-                <span style={{
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: '280px',
-                  fontWeight: 500,
-                }}>
+                <span className="notice-new-tag">NEW</span>
+                <span className="notice-title-text">
                   {latestNotice.title} →
                 </span>
               </button>
@@ -91,20 +75,7 @@ export default function Header({ activeSection, setActiveSection, onOpenAdmin, a
 
             <button
               onClick={onOpenAdmin}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                color: '#CBD5E1',
-                fontSize: '0.78rem',
-                padding: '0.22rem 0.65rem',
-                borderRadius: '6px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                whiteSpace: 'nowrap',
-              }}
+              className="header-admin-btn"
             >
               <Shield size={12} color="#F97316" /> Admin
             </button>
@@ -128,10 +99,18 @@ export default function Header({ activeSection, setActiveSection, onOpenAdmin, a
             </div>
           </a>
 
-          {/* Desktop Navigation */}
+          {/* Mobile backdrop overlay */}
+          {mobileMenuOpen && (
+            <div
+              className="mobile-backdrop"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+          )}
+
+          {/* Desktop & Mobile Navigation Links */}
           <ul className={`nav-links ${mobileMenuOpen ? 'mobile-open' : ''}`}>
             {navItems.map((item) => (
-              <li key={item.id}>
+              <li key={item.id} style={{ width: mobileMenuOpen ? '100%' : 'auto' }}>
                 <a
                   href={`#${item.id}`}
                   className={`nav-link ${activeSection === item.id ? 'active' : ''}`}
@@ -144,18 +123,17 @@ export default function Header({ activeSection, setActiveSection, onOpenAdmin, a
                 </a>
               </li>
             ))}
-            <li>
+            <li style={{ width: mobileMenuOpen ? '100%' : 'auto', marginTop: mobileMenuOpen ? '0.5rem' : 0 }}>
               <button
-                className="btn btn-primary"
+                className="btn btn-primary nav-cta-btn"
                 onClick={() => handleNavClick('enquiry')}
-                style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
               >
-                <Sparkles size={13} /> Book Demo
+                <Sparkles size={14} /> Book Free Demo
               </button>
             </li>
           </ul>
 
-          {/* Mobile Menu Toggle */}
+          {/* Mobile Menu Toggle Button */}
           <button
             className="mobile-toggle"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

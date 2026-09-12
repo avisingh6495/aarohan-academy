@@ -13,6 +13,11 @@ export default function FeeSection({ fees = [], onEnquire }) {
           </p>
         </div>
 
+        {/* Mobile scroll hint */}
+        <div className="mobile-scroll-hint">
+          <span>👈 Swipe table horizontally to view full fees & inclusions 👉</span>
+        </div>
+
         {/* Fee Table */}
         <div className="fee-table-container">
           <table className="fee-table">
