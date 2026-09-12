@@ -6,7 +6,7 @@ export default defineConfig({
   // GitHub Pages repo name — this sets the correct base path for assets
   base: process.env.NODE_ENV === 'production' ? '/aarohan-academy/' : '/',
   server: {
-    port: 10000,
+    port: 3000,
     proxy: {
       '/api': {
         target: 'http://localhost:5050',
