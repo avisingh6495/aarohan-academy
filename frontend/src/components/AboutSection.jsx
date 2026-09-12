@@ -6,7 +6,7 @@ export default function AboutSection({ aboutData }) {
     mission: "To empower students from Class 1 to 10 with deep conceptual understanding, analytical thinking, and confidence to excel academically and beyond.",
     philosophy: "We believe no student is weak—they only need the right guidance, small batch focus, and clear foundational concepts.",
     whyChooseUs: [
-      "IIT Kanpur & MCA Expert Faculty",
+      "Expert Faculty",
       "Strictly Small Batch Size (Max 12-15 Students)",
       "Weekly Assessment Tests & Homework Monitoring",
       "Dedicated Doubt Resolution Hours",
