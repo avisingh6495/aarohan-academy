@@ -5,7 +5,7 @@ export default function Hero({ onBookDemo, onContactUs, heroData }) {
   const content = heroData || {
     title: "Building Strong Academic Foundations for Class 1 to 10",
     tagline: "Building strong foundations, Class 1 to 10",
-    subtitle: "Interactive learning with small batch sizes, experienced faculty from IIT Kanpur & top universities, and individual attention.",
+    subtitle: "Interactive learning with small batch sizes, experienced & Qualified faculty (from IIT Kanpur), and individual attention.",
     badge: "⭐ Admissions Open for Academic Session 2026-27"
   };
 
@@ -53,11 +53,11 @@ export default function Hero({ onBookDemo, onContactUs, heroData }) {
             {/* Stats Bar */}
             <div className="hero-stats">
               <div className="stat-card">
-                <div className="stat-num">10+</div>
+                <div className="stat-num">5+</div>
                 <div className="stat-label">Years of Excellence</div>
               </div>
               <div className="stat-card">
-                <div className="stat-num">500+</div>
+                <div className="stat-num">100+</div>
                 <div className="stat-label">Students Guided</div>
               </div>
               <div className="stat-card">
