@@ -1,7 +1,7 @@
 // Robust API Helper for Aarohan Academy Frontend & Admin
 
 // ⚡ Production backend URL (Render.com) — update this after deploying to Render
-const RENDER_BACKEND_URL = 'https://aarohan-academy-api.onrender.com/api';
+const RENDER_BACKEND_URL = 'https://aarohan-academy.onrender.com/api';
 
 const getApiBase = () => {
   if (typeof window !== 'undefined') {
