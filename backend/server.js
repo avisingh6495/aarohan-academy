@@ -11,22 +11,8 @@ const PORT = process.env.PORT || 5050;
 const JWT_SECRET = process.env.JWT_SECRET || 'aarohan_academy_super_secret_jwt_key_2026';
 
 // Middleware
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'https://avisingh6495.github.io',
-  /^https:\/\/avisingh6495\.github\.io.*/
-];
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // allow non-browser (curl, Render health checks)
-    if (allowedOrigins.some(o => (typeof o === 'string' ? o === origin : o.test(origin)))) {
-      return callback(null, true);
-    }
-    callback(new Error('CORS: origin not allowed: ' + origin));
-  },
-  credentials: true
-}));
+app.use(cors());
+
 app.use(express.json());
 
 // Auth Middleware for protected routes
