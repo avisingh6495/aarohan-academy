@@ -149,7 +149,11 @@ function getLocalStore() {
 }
 
 function saveLocalStore(store) {
-  localStorage.setItem('aarohan_local_db', JSON.stringify(store));
+  try {
+    localStorage.setItem('aarohan_local_db', JSON.stringify(store));
+  } catch (e) {
+    console.error('LocalStorage save error:', e);
+  }
 }
 
 const getApiBase = () => {

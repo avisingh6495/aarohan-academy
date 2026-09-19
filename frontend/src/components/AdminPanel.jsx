@@ -106,21 +106,49 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
     setIsAuthenticated(false);
   };
 
-  // Local File Upload Helper (FileReader Base64)
+  // Local File Upload Helper with Canvas Compression (resizes to max 800px & 80% JPEG quality)
   const handleFileUpload = (e, callback) => {
     const file = e.target.files && e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert('File size exceeds 5MB. Please select a smaller image.');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        callback(reader.result);
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 800; // max 800px width/height for fast loading
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to lightweight JPEG Data URL
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.82);
+        callback(compressedBase64);
       };
-      reader.readAsDataURL(file);
-    }
+      img.onerror = () => {
+        callback(event.target.result);
+      };
+    };
   };
+
 
   // --- TEACHER CRUD ---
   const handleSaveTeacher = async (e) => {
