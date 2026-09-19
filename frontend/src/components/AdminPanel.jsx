@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Shield, LogOut, Users, BookOpen, DollarSign, Bell, Inbox, Image as ImageIcon,
-  Plus, Trash2, Edit3, CheckCircle, AlertCircle, RefreshCw, MapPin, Phone, Mail, Clock, Map
+  Plus, Trash2, Edit3, CheckCircle, AlertCircle, RefreshCw, MapPin, Phone, Mail, Clock, Map, Upload
 } from 'lucide-react';
 import { api } from '../api';
 
@@ -34,7 +34,7 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
   });
 
   // Modal / Form state for CRUD operations
-  const [modalMode, setModalMode] = useState(null); // 'edit_teacher', 'edit_class', 'edit_fee', 'add_notice', 'add_gallery'
+  const [modalMode, setModalMode] = useState(null); // 'edit_teacher', 'edit_class', 'edit_fee', 'edit_notice', 'add_gallery'
   const [currentItem, setCurrentItem] = useState({});
 
   useEffect(() => {
@@ -73,7 +73,13 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
       setSiteContent(sc || {});
 
       if (sc && sc.contact) {
-        setContactForm(sc.contact);
+        setContactForm({
+          address: sc.contact.address || '',
+          phone: sc.contact.phone || '',
+          email: sc.contact.email || '',
+          hours: sc.contact.hours || sc.contact.timings || '',
+          mapEmbedUrl: sc.contact.mapEmbedUrl || sc.contact.map_iframe || ''
+        });
       }
     } catch (err) {
       console.error('Failed to load admin data:', err);
@@ -98,6 +104,22 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
   const handleLogout = () => {
     api.logoutAdmin();
     setIsAuthenticated(false);
+  };
+
+  // Local File Upload Helper (FileReader Base64)
+  const handleFileUpload = (e, callback) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size exceeds 5MB. Please select a smaller image.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        callback(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // --- TEACHER CRUD ---
@@ -187,12 +209,12 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
       fetchAllAdminData();
       onDataChanged();
     } catch (err) {
-      alert('Error saving fee plan: ' + err.message);
+      alert('Error saving fee structure: ' + err.message);
     }
   };
 
   const handleDeleteFee = async (id) => {
-    if (!window.confirm('Delete this fee plan?')) return;
+    if (!window.confirm('Delete fee plan?')) return;
     try {
       await api.deleteFee(id);
       fetchAllAdminData();
@@ -255,7 +277,7 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
     e.preventDefault();
     try {
       await api.updateContent('contact', contactForm);
-      alert('✅ Contact Details & Address updated successfully!');
+      alert('✅ Contact Details & Google Map updated successfully!');
       fetchAllAdminData();
       onDataChanged();
     } catch (err) {
@@ -299,23 +321,25 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
           overflow: 'hidden'
         }}
       >
-        {/* Admin Header with proper spacing */}
+        {/* Admin Header with proper alignment & spacing */}
         <div
           style={{
             background: 'var(--primary-navy)',
             color: 'white',
-            padding: '1.25rem 2rem',
+            padding: '1rem 1.5rem',
             display: 'flex',
-            justify: 'space-between',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            borderBottom: '1px solid rgba(255,255,255,0.1)'
+            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            width: '100%'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.3rem', fontWeight: 800 }}>
-            <Shield color="#F97316" size={26} /> Aarohan Academy Admin Portal
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '1.2rem', fontWeight: 800 }}>
+            <Shield color="#F97316" size={24} /> 
+            <span>Aarohan Academy Admin Portal</span>
           </div>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginLeft: 'auto' }}>
             {isAuthenticated && (
               <button
                 onClick={handleLogout}
@@ -323,36 +347,45 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
                 style={{
                   background: '#EF4444',
                   color: 'white',
-                  fontSize: '0.875rem',
-                  padding: '0.45rem 1.1rem',
-                  borderRadius: '8px'
+                  fontSize: '0.825rem',
+                  padding: '0.4rem 0.9rem',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
                 }}
               >
-                <LogOut size={16} /> Logout
+                <LogOut size={15} /> Logout
               </button>
             )}
             <button
               onClick={onClose}
               style={{
                 color: '#94A3B8',
-                fontSize: '1.75rem',
+                fontSize: '1.5rem',
                 cursor: 'pointer',
                 lineHeight: 1,
-                padding: '0.2rem',
-                transition: 'color 0.2s'
+                padding: '0.2rem 0.5rem',
+                borderRadius: '6px',
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
               }}
               onMouseOver={(e) => e.target.style.color = '#FFF'}
               onMouseOut={(e) => e.target.style.color = '#94A3B8'}
               aria-label="Close Admin Modal"
             >
-              ×
+              ✕
             </button>
           </div>
         </div>
 
         {!isAuthenticated ? (
-          /* Login Form */
-          <div style={{ padding: '3rem 2rem', maxWidth: '440px', margin: 'auto', width: '100%' }}>
+          /* Login Form (Cleaned without credentials hint) */
+          <div style={{ padding: '3rem 1.5rem', maxWidth: '440px', margin: 'auto', width: '100%' }}>
             <h2 style={{ fontSize: '1.75rem', fontWeight: 800, textAlign: 'center', marginBottom: '0.5rem' }}>
               Admin Authentication
             </h2>
@@ -374,6 +407,7 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
                   className="form-input"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter admin username"
                   required
                 />
               </div>
@@ -385,6 +419,7 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
                   className="form-input"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter admin password"
                   required
                 />
               </div>
@@ -393,16 +428,11 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
                 {loading ? 'Authenticating...' : 'Sign In to Dashboard'}
               </button>
             </form>
-
-            <div style={{ marginTop: '1.5rem', background: '#F8FAFC', padding: '0.85rem', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-              🔑 Default Admin Credentials:<br />
-              <strong>Username:</strong> admin | <strong>Password:</strong> admin123
-            </div>
           </div>
         ) : (
           /* Admin Main Layout */
           <div className="admin-layout" style={{ flexGrow: 1, minHeight: 0 }}>
-            {/* Sidebar */}
+            {/* Responsive Sidebar Navigation */}
             <div className="admin-sidebar">
               <ul className="admin-nav">
                 <li
@@ -456,56 +486,62 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
               </ul>
             </div>
 
-            {/* Main Content Area */}
+            {/* Admin Main Content Area */}
             <div className="admin-main" style={{ overflowY: 'auto' }}>
-
-              {/* OVERVIEW TAB */}
+              {/* DASHBOARD OVERVIEW */}
               {activeTab === 'dashboard' && (
                 <div>
-                  <h2 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '1.5rem' }}>Dashboard Overview</h2>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
-                    <div className="card" style={{ background: '#EFF6FF', borderColor: '#BFDBFE' }}>
-                      <div style={{ color: '#1E40AF', fontSize: '0.85rem', fontWeight: 600 }}>Teachers</div>
-                      <div style={{ fontSize: '2.25rem', fontWeight: 800, color: '#1E3A8A' }}>{teachers.length}</div>
+                  <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '1.5rem' }}>Dashboard Overview</h2>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+                    <div className="card" style={{ borderLeft: '4px solid var(--accent-orange)' }}>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Faculty Members</div>
+                      <div style={{ fontSize: '2rem', fontWeight: 800 }}>{teachers.length}</div>
                     </div>
-                    <div className="card" style={{ background: '#F0FDF4', borderColor: '#BBF7D0' }}>
-                      <div style={{ color: '#166534', fontSize: '0.85rem', fontWeight: 600 }}>Classes & Wings</div>
-                      <div style={{ fontSize: '2.25rem', fontWeight: 800, color: '#14532D' }}>{classes.length}</div>
+
+                    <div className="card" style={{ borderLeft: '4px solid var(--accent-teal)' }}>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Active Wings</div>
+                      <div style={{ fontSize: '2rem', fontWeight: 800 }}>{classes.length}</div>
                     </div>
-                    <div className="card" style={{ background: '#FFF7ED', borderColor: '#FED7AA' }}>
-                      <div style={{ color: '#9A3412', fontSize: '0.85rem', fontWeight: 600 }}>Total Enquiries</div>
-                      <div style={{ fontSize: '2.25rem', fontWeight: 800, color: '#7C2D12' }}>{enquiries.length}</div>
+
+                    <div className="card" style={{ borderLeft: '4px solid #6366F1' }}>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Admission Enquiries</div>
+                      <div style={{ fontSize: '2rem', fontWeight: 800 }}>{enquiries.length}</div>
                     </div>
-                    <div className="card" style={{ background: '#F5F3FF', borderColor: '#DDD6FE' }}>
-                      <div style={{ color: '#5B21B6', fontSize: '0.85rem', fontWeight: 600 }}>Gallery Photos</div>
-                      <div style={{ fontSize: '2.25rem', fontWeight: 800, color: '#4C1D95' }}>{gallery.length}</div>
+
+                    <div className="card" style={{ borderLeft: '4px solid #EC4899' }}>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Gallery Photos</div>
+                      <div style={{ fontSize: '2rem', fontWeight: 800 }}>{gallery.length}</div>
                     </div>
                   </div>
 
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1rem' }}>Recent Demo Enquiries</h3>
-                  <div className="fee-table-container">
-                    <table className="fee-table">
-                      <thead>
-                        <tr>
-                          <th>Student & Parent</th>
-                          <th>Class</th>
-                          <th>Phone</th>
-                          <th>Demo Slot</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {enquiries.slice(0, 5).map((e) => (
-                          <tr key={e.id}>
-                            <td>{e.student_name} <br /><span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Parent: {e.parent_name}</span></td>
-                            <td>{e.student_class}</td>
-                            <td>{e.phone}</td>
-                            <td>{e.demo_slot}</td>
-                            <td><span className="badge badge-orange">{e.status}</span></td>
+                  {/* Recent Admission Enquiries */}
+                  <div className="card">
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem' }}>Recent Enquiries</h3>
+                    <div className="fee-table-container">
+                      <table className="fee-table">
+                        <thead>
+                          <tr>
+                            <th>Student & Parent</th>
+                            <th>Class</th>
+                            <th>Phone</th>
+                            <th>Slot</th>
+                            <th>Status</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {enquiries.slice(0, 5).map((e) => (
+                            <tr key={e.id}>
+                              <td>{e.student_name} <br /><span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Parent: {e.parent_name}</span></td>
+                              <td>{e.student_class}</td>
+                              <td>{e.phone}</td>
+                              <td>{e.demo_slot}</td>
+                              <td><span className="badge badge-orange">{e.status}</span></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               )}
@@ -530,7 +566,7 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
                     {teachers.map((t) => (
                       <div className="card" key={t.id}>
                         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
-                          <img src={t.photo} alt={t.name} style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover' }} />
+                          <img src={t.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'} alt={t.name} style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover' }} />
                           <div>
                             <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{t.name}</div>
                             <div style={{ fontSize: '0.85rem', color: 'var(--accent-orange)', fontWeight: 600 }}>{t.qualification}</div>
@@ -759,8 +795,8 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
                       <div className="card" key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.35rem' }}>
-                            <span className="badge badge-orange">{a.tag}</span>
-                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{a.date_str}</span>
+                            <span className="badge badge-orange">{a.tag || a.type}</span>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{a.date_str || a.created_at}</span>
                           </div>
                           <h4 style={{ fontSize: '1.1rem', fontWeight: 700 }}>{a.title}</h4>
                           <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{a.content}</p>
@@ -840,13 +876,14 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
 
                       <div className="form-group">
                         <label className="form-label">
-                          <Map size={16} inline style={{ marginRight: '4px' }} /> Google Maps Embed URL
+                          <Map size={16} inline style={{ marginRight: '4px' }} /> Google Maps Embed URL / Location Link
                         </label>
                         <input
                           type="text"
                           className="form-input"
                           value={contactForm.mapEmbedUrl}
                           onChange={(e) => setContactForm({ ...contactForm, mapEmbedUrl: e.target.value })}
+                          placeholder="Paste Google Maps URL or embed link..."
                         />
                       </div>
 
@@ -925,7 +962,7 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
           </div>
         )}
 
-        {/* MODAL: Edit/Add Teacher */}
+        {/* MODAL: Edit/Add Teacher (with Local System Image Upload option) */}
         {modalMode === 'edit_teacher' && (
           <div className="modal-overlay">
             <div className="modal-content" style={{ maxWidth: '550px' }}>
@@ -972,15 +1009,51 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
                     placeholder="Mathematics, Physics, Chemistry"
                   />
                 </div>
+
+                {/* Local System File Upload + URL Input for Teacher */}
                 <div className="form-group">
-                  <label className="form-label">Photo URL</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={currentItem.photo || ''}
-                    onChange={(e) => setCurrentItem({ ...currentItem, photo: e.target.value })}
-                  />
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Upload size={16} color="#F97316" /> Teacher Photo (Local System Upload OR URL)
+                  </label>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        id="teacher-file-input"
+                        style={{ display: 'none' }}
+                        onChange={(e) => handleFileUpload(e, (base64) => setCurrentItem({ ...currentItem, photo: base64 }))}
+                      />
+                      <label
+                        htmlFor="teacher-file-input"
+                        className="btn btn-outline"
+                        style={{ width: '100%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#F8FAFC' }}
+                      >
+                        <Upload size={16} /> Choose Image File from Device/Folder
+                      </label>
+                    </div>
+
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>— OR Paste Direct Image URL —</div>
+
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={currentItem.photo || ''}
+                      onChange={(e) => setCurrentItem({ ...currentItem, photo: e.target.value })}
+                      placeholder="https://images.unsplash.com/..."
+                    />
+
+                    {/* Image Preview */}
+                    {currentItem.photo && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#F1F5F9', padding: '0.5rem 0.75rem', borderRadius: '8px' }}>
+                        <img src={currentItem.photo} alt="Preview" style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <span style={{ fontSize: '0.8rem', color: '#0D9488', fontWeight: 600 }}>✓ Photo Selected</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
+
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
                   <button type="button" className="btn btn-outline" onClick={() => setModalMode(null)}>Cancel</button>
                   <button type="submit" className="btn btn-primary">Save Teacher</button>
@@ -1149,7 +1222,7 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
           </div>
         )}
 
-        {/* MODAL: Upload / Add Gallery Photo */}
+        {/* MODAL: Upload / Add Gallery Photo (with Local System Image Upload option) */}
         {modalMode === 'add_gallery' && (
           <div className="modal-overlay">
             <div className="modal-content" style={{ maxWidth: '550px' }}>
@@ -1178,17 +1251,51 @@ export default function AdminPanel({ isOpen, onClose, onDataChanged }) {
                     <option value="Achievements">Achievements</option>
                   </select>
                 </div>
+
+                {/* Local System File Upload + URL Input for Gallery */}
                 <div className="form-group">
-                  <label className="form-label">Image URL / Photo Link</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={currentItem.image_url || ''}
-                    onChange={(e) => setCurrentItem({ ...currentItem, image_url: e.target.value })}
-                    placeholder="https://images.unsplash.com/..."
-                    required
-                  />
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Upload size={16} color="#F97316" /> Image File (Upload from Computer OR URL)
+                  </label>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        id="gallery-file-input"
+                        style={{ display: 'none' }}
+                        onChange={(e) => handleFileUpload(e, (base64) => setCurrentItem({ ...currentItem, image_url: base64 }))}
+                      />
+                      <label
+                        htmlFor="gallery-file-input"
+                        className="btn btn-outline"
+                        style={{ width: '100%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#F8FAFC' }}
+                      >
+                        <Upload size={16} /> Choose Image File from Device/Folder
+                      </label>
+                    </div>
+
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>— OR Paste Direct Photo Link —</div>
+
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={currentItem.image_url || ''}
+                      onChange={(e) => setCurrentItem({ ...currentItem, image_url: e.target.value })}
+                      placeholder="https://images.unsplash.com/..."
+                    />
+
+                    {/* Image Preview */}
+                    {currentItem.image_url && (
+                      <div style={{ background: '#F1F5F9', padding: '0.5rem', borderRadius: '8px' }}>
+                        <img src={currentItem.image_url} alt="Preview" style={{ width: '100%', height: '140px', borderRadius: '6px', objectFit: 'cover' }} />
+                        <div style={{ fontSize: '0.75rem', color: '#0D9488', fontWeight: 600, marginTop: '0.25rem', textAlign: 'center' }}>✓ Image Ready to Upload</div>
+                      </div>
+                    )}
+                  </div>
                 </div>
+
                 <div className="form-group">
                   <label className="form-label">Caption / Description</label>
                   <input

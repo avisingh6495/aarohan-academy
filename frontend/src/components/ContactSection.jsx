@@ -1,16 +1,55 @@
 import React from 'react';
 import { MapPin, Phone, Mail, Clock, Send, MessageCircle } from 'lucide-react';
 
+// Helper to convert any user-pasted Google Maps URL (embed URL, iframe code, share link, or lat/lng) into a working embed URL
+function formatMapEmbedUrl(inputUrl) {
+  if (!inputUrl) {
+    return "https://maps.google.com/maps?q=IIT+Kanpur&t=&z=14&ie=UTF8&iwloc=&output=embed";
+  }
+
+  const str = String(inputUrl).trim();
+
+  // 1. If user pasted iframe HTML snippet: <iframe src="..." ...></iframe>
+  const iframeSrcMatch = str.match(/src=["']([^"']+)["']/i);
+  if (iframeSrcMatch && iframeSrcMatch[1]) {
+    return iframeSrcMatch[1];
+  }
+
+  // 2. If already an embed URL
+  if (str.includes('google.com/maps/embed') || str.includes('output=embed')) {
+    return str;
+  }
+
+  // 3. If user pasted a Google Maps URL with lat/long: e.g. /@25.2715759,83.0074158,16z
+  const coordsMatch = str.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (coordsMatch) {
+    const lat = coordsMatch[1];
+    const lng = coordsMatch[2];
+    return `https://maps.google.com/maps?q=${lat},${lng}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  }
+
+  // 4. If place URL: /place/Location+Name
+  const placeMatch = str.match(/place\/([^/]+)/);
+  if (placeMatch) {
+    const place = decodeURIComponent(placeMatch[1].replace(/\+/g, ' '));
+    return `https://maps.google.com/maps?q=${encodeURIComponent(place)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  }
+
+  // 5. Fallback: treat string as address query
+  return `https://maps.google.com/maps?q=${encodeURIComponent(str)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+}
+
 export default function ContactSection({ contactData }) {
   const data = contactData || {
-    address: "Aarohan Academy, Main Knowledge Highway, Near City Central Library, Sector 4",
-    phone: "+91 98765 43210",
-    email: "info@aarohanacademy.edu.in",
-    hours: "Mon - Sat: 3:00 PM - 8:00 PM | Sun: 9:00 AM - 1:00 PM",
-    mapEmbedUrl: "https://maps.google.com/maps?q=IIT+Kanpur&t=&z=13&ie=UTF8&iwloc=&output=embed"
+    address: "Aarohan Academy, Bala ji Extension Bhagwanpur Lanka",
+    phone: "+91 9580770243",
+    email: "avisingh6495@gmail.com",
+    hours: "Mon - Sat: 3:00 PM - 7:00 PM",
+    mapEmbedUrl: "https://maps.google.com/maps?q=Bala+ji+Extension+Bhagwanpur+Lanka&t=&z=15&ie=UTF8&iwloc=&output=embed"
   };
 
-  const cleanPhone = data.phone ? data.phone.split('/')[0].replace(/[^0-9+]/g, '') : '+919876543210';
+  const mapUrl = formatMapEmbedUrl(data.mapEmbedUrl || data.map_iframe || data.address);
+  const cleanPhone = data.phone ? data.phone.split('/')[0].replace(/[^0-9+]/g, '') : '+919580770243';
 
   return (
     <section className="section section-bg" id="contact">
@@ -74,17 +113,17 @@ export default function ContactSection({ contactData }) {
                   </div>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '0.925rem' }}>Center Hours</div>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{data.hours}</div>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{data.hours || data.timings}</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Google Map Embed */}
-            <div style={{ borderRadius: 'var(--radius-md)', overflow: 'hidden', height: '220px', boxShadow: 'var(--shadow-md)', border: '1px solid var(--border-light)' }}>
+            {/* Dynamic Google Map Embed */}
+            <div style={{ borderRadius: 'var(--radius-md)', overflow: 'hidden', height: '260px', boxShadow: 'var(--shadow-md)', border: '1px solid var(--border-light)' }}>
               <iframe
                 title="Aarohan Academy Map Location"
-                src={data.mapEmbedUrl}
+                src={mapUrl}
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
